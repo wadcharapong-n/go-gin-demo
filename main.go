@@ -2,17 +2,15 @@ package main
 
 import (
 	"context"
+	"wadcharapong-n/go-gin-demo/src/controller"
+	"wadcharapong-n/go-gin-demo/src/model"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
-
-type user struct {
-	Name string `json:"name"`
-	Age  int    `json:"age"`
-}
 
 var ginLambda *ginadapter.GinLambda
 
@@ -26,22 +24,10 @@ func lambdaHandler(ctx context.Context, req events.APIGatewayProxyRequest) (even
 
 func ginEngine() *gin.Engine {
 	app := gin.Default()
+	model.ConnectDataBase()
 
-	app.GET("/hello", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "hello world",
-		})
-	})
-
-	app.POST("/user", func(c *gin.Context) {
-		var u user
-		if err := c.ShouldBindJSON(&u); err != nil {
-			c.JSON(400, gin.H{"message": err.Error()})
-			return
-		}
-
-		c.JSON(200, u)
-	})
+	app.GET("/hello", controller.GetHello)
+	app.POST("/user", controller.User)
 
 	return app
 }
